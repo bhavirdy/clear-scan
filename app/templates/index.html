@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Home Page
+{% endblock %}
+
+{% block main %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="jumbotron">
+                <h1 class="display-4">Welcome to BetterResumeEnhancer!</h1>
+                <p class="lead">Transform your resume into a powerful tool that impresses employers.</p>
+                <hr class="my-4">
+                <p>BetterResumeEnhancer is here to help you elevate your career by enhancing your resume. Our AI-powered system analyzes job descriptions and tailors your resume to match the requirements, increasing your chances of landing your dream job.</p>
+                <div class="dropdown">
+                    <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                        Get Started
+                    </button>                    
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <li><a class="dropdown-item" href="/signup">Sign Up</a></li>
+                        <li><a class="dropdown-item" href="/signin">Login</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <h2>About Us</h2>
+            <p>BetterSoftwareSolutions is a South African-based software studio dedicated to pushing South Africa towards becoming a digital economy. Established in 2021, our mission is to empower individuals and businesses through innovative SaaS solutions.</p>
+        </div>
+        <div class="col-md-6">
+            <h2>How It Works</h2>
+            <p>Upload your resume and the job description you're applying for, and let our AI-powered system analyze and enhance your resume to match the job requirements. Download the enhanced resume and increase your chances of landing your dream job!</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+

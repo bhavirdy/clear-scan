@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Upload Resume and Job Description
+{% endblock %}
+
+{% block main %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Upload Resume and Job Description</h5>
+                    <form id="uploadForm" method="POST" action="/process" class="dropzones" enctype="multipart/form-data">
+                        <div class="dropzone-inner dropzone">
+                            <label for="resume" class="form-label">Drag & Drop Resume Here</label>
+                            <input type="file" id="resume" name="resume" accept=".pdf,.doc,.docx,image/*" style="display: none;">
+                            <p>Or</p>
+                            <label for="resume" class="browse-btn btn btn-primary text-light">Upload Resume</label>
+                            <div id="fileNameDisplay" class="text-success"></div>
+                        </div>
+                        
+                        <div class="container">
+                            <div class="mb-3">
+                                <label for="jobDescription" class="form-label">Job Description</label>
+                                <textarea class="form-control" id="jobDescription" name="jobDescription" rows="5" required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                        </div>
+                    </form>
+                    
+                </div>
+                
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
