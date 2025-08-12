@@ -1,38 +1,328 @@
 {% extends "base.html" %}
 
 {% block title %}
-    Upload Resume and Job Description
+    Medical Image Analysis - ClearScan
 {% endblock %}
 
 {% block main %}
 <div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Upload Resume and Job Description</h5>
-                    <form id="uploadForm" method="POST" action="/process" class="dropzones" enctype="multipart/form-data">
-                        <div class="dropzone-inner dropzone">
-                            <label for="resume" class="form-label">Drag & Drop Resume Here</label>
-                            <input type="file" id="resume" name="resume" accept=".pdf,.doc,.docx,image/*" style="display: none;">
-                            <p>Or</p>
-                            <label for="resume" class="browse-btn btn btn-primary text-light">Upload Resume</label>
-                            <div id="fileNameDisplay" class="text-success"></div>
+    <!-- Page Header -->
+    <div class="row justify-content-center mb-4">
+        <div class="col-lg-10">
+            <div class="card border-0 bg-gradient-primary text-white rounded-4">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-file-medical fa-2x me-3"></i>
+                        <div>
+                            <h2 class="mb-1 fw-bold">Medical Image Analysis</h2>
+                            <p class="mb-0 opacity-90">Upload medical images for AI-powered diagnostic analysis</p>
                         </div>
-                        
-                        <div class="container">
-                            <div class="mb-3">
-                                <label for="jobDescription" class="form-label">Job Description</label>
-                                <textarea class="form-control" id="jobDescription" name="jobDescription" rows="5" required></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card border-0 shadow-lg rounded-4">
+                <div class="card-body p-5">
+                    <!-- Upload Form -->
+                    <form method="POST" enctype="multipart/form-data" id="uploadForm">
+                        <div class="row g-4">
+                            <!-- Patient Information Section -->
+                            <div class="col-lg-4">
+                                <div class="card border border-primary border-opacity-25 h-100">
+                                    <div class="card-header bg-primary bg-opacity-10 border-0">
+                                        <h5 class="mb-0 fw-bold text-primary">
+                                            <i class="fas fa-user-injured me-2"></i>Patient Information
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <label for="patient_id" class="form-label fw-semibold">
+                                                <i class="fas fa-id-card me-1"></i>Patient ID
+                                            </label>
+                                            <input type="text" class="form-control" id="patient_id" name="patient_id" 
+                                                   placeholder="Enter patient ID" required>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="patient_age" class="form-label fw-semibold">
+                                                <i class="fas fa-birthday-cake me-1"></i>Age
+                                            </label>
+                                            <input type="number" class="form-control" id="patient_age" name="patient_age" 
+                                                   placeholder="Enter age" min="0" max="150">
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="patient_gender" class="form-label fw-semibold">
+                                                <i class="fas fa-venus-mars me-1"></i>Gender
+                                            </label>
+                                            <select class="form-select" id="patient_gender" name="patient_gender">
+                                                <option value="">Select gender</option>
+                                                <option value="male">Male</option>
+                                                <option value="female">Female</option>
+                                                <option value="other">Other</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="study_type" class="form-label fw-semibold">
+                                                <i class="fas fa-stethoscope me-1"></i>Study Type
+                                            </label>
+                                            <select class="form-select" id="study_type" name="study_type">
+                                                <option value="">Select study type</option>
+                                                <option value="chest_xray">Chest X-Ray</option>
+                                                <option value="ct_scan">CT Scan</option>
+                                                <option value="mri">MRI</option>
+                                                <option value="ultrasound">Ultrasound</option>
+                                                <option value="other">Other</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div class="mb-0">
+                                            <label for="clinical_notes" class="form-label fw-semibold">
+                                                <i class="fas fa-notes-medical me-1"></i>Clinical Notes
+                                            </label>
+                                            <textarea class="form-control" id="clinical_notes" name="clinical_notes" 
+                                                      rows="3" placeholder="Enter relevant clinical information..."></textarea>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <button type="submit" class="btn btn-primary">Submit</button>
+                            
+                            <!-- File Upload Section -->
+                            <div class="col-lg-8">
+                                <div class="card border border-success border-opacity-25 h-100">
+                                    <div class="card-header bg-success bg-opacity-10 border-0">
+                                        <h5 class="mb-0 fw-bold text-success">
+                                            <i class="fas fa-cloud-upload-alt me-2"></i>Image Upload
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <!-- Drag and Drop Area -->
+                                        <div class="upload-area border-2 border-dashed border-success border-opacity-50 rounded-3 p-5 text-center mb-4" 
+                                             id="uploadArea" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);">
+                                            <div class="upload-content">
+                                                <i class="fas fa-cloud-upload-alt fa-4x text-success mb-3"></i>
+                                                <h4 class="fw-bold text-dark">Drag & Drop Medical Images</h4>
+                                                <p class="text-muted mb-3">or click to browse files</p>
+                                                <input type="file" class="d-none" id="file" name="file" 
+                                                       accept=".jpg,.jpeg,.png,.dcm,.dicom" required>
+                                                <button type="button" class="btn btn-outline-success btn-lg" 
+                                                        onclick="document.getElementById('file').click()">
+                                                    <i class="fas fa-folder-open me-2"></i>Browse Files
+                                                </button>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- File Info -->
+                                        <div class="file-info d-none" id="fileInfo">
+                                            <div class="alert alert-success d-flex align-items-center">
+                                                <i class="fas fa-check-circle me-2"></i>
+                                                <div>
+                                                    <strong>File selected:</strong> <span id="fileName"></span><br>
+                                                    <small class="text-muted">Size: <span id="fileSize"></span></small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Supported Formats -->
+                                        <div class="alert alert-info border-0">
+                                            <h6 class="alert-heading fw-bold mb-2">
+                                                <i class="fas fa-info-circle me-1"></i>Supported Formats
+                                            </h6>
+                                            <div class="row g-2">
+                                                <div class="col-6">
+                                                    <span class="badge bg-primary me-1">DICOM</span>
+                                                    <span class="badge bg-primary me-1">JPEG</span>
+                                                </div>
+                                                <div class="col-6">
+                                                    <span class="badge bg-primary me-1">PNG</span>
+                                                    <span class="badge bg-primary">DCM</span>
+                                                </div>
+                                            </div>
+                                            <small class="text-muted d-block mt-2">
+                                                Maximum file size: 50MB | High-resolution images recommended
+                                            </small>
+                                        </div>
+                                        
+                                        <!-- Submit Button -->
+                                        <div class="text-center">
+                                            <button type="submit" class="btn btn-success btn-lg px-5 py-3 fw-semibold" id="analyzeBtn" disabled>
+                                                <i class="fas fa-microscope me-2"></i>Analyze Image
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </form>
-                    
                 </div>
-                
+            </div>
+        </div>
+    </div>
+    
+    <!-- Analysis Results Section (Hidden by default) -->
+    <div class="row justify-content-center mt-4 d-none" id="resultsSection">
+        <div class="col-lg-10">
+            <div class="card border-0 shadow-lg rounded-4">
+                <div class="card-header bg-gradient-info text-white border-0">
+                    <h4 class="mb-0 fw-bold">
+                        <i class="fas fa-chart-line me-2"></i>Analysis Results
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <div id="analysisResults">
+                        <!-- Results will be populated here -->
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #0d6efd 0%, #6610f2 100%);
+}
+
+.bg-gradient-info {
+    background: linear-gradient(135deg, #0dcaf0 0%, #6f42c1 100%);
+}
+
+.upload-area {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.upload-area:hover {
+    background-color: rgba(25, 135, 84, 0.05);
+    border-color: rgba(25, 135, 84, 0.5) !important;
+}
+
+.upload-area.drag-over {
+    background-color: rgba(25, 135, 84, 0.1);
+    border-color: #198754 !important;
+    transform: scale(1.02);
+}
+
+.card {
+    transition: all 0.3s ease;
+}
+
+#analyzeBtn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.alert {
+    border-radius: 0.75rem;
+}
+
+.form-control, .form-select {
+    border-radius: 0.5rem;
+    border: 1px solid #dee2e6;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+</style>
+
+<script>
+// File upload handling
+document.getElementById('file').addEventListener('change', function(e) {
+    handleFileSelect(e.target.files[0]);
+});
+
+function dragOverHandler(ev) {
+    ev.preventDefault();
+    document.getElementById('uploadArea').classList.add('drag-over');
+}
+
+function dropHandler(ev) {
+    ev.preventDefault();
+    document.getElementById('uploadArea').classList.remove('drag-over');
+    
+    const files = ev.dataTransfer.files;
+    if (files.length > 0) {
+        document.getElementById('file').files = files;
+        handleFileSelect(files[0]);
+    }
+}
+
+// Remove drag-over class when dragging leaves the area
+document.getElementById('uploadArea').addEventListener('dragleave', function(e) {
+    e.preventDefault();
+    this.classList.remove('drag-over');
+});
+
+function handleFileSelect(file) {
+    if (file) {
+        document.getElementById('fileName').textContent = file.name;
+        document.getElementById('fileSize').textContent = formatFileSize(file.size);
+        document.getElementById('fileInfo').classList.remove('d-none');
+        document.getElementById('analyzeBtn').disabled = false;
+    }
+}
+
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+// Form submission handling
+document.getElementById('uploadForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const submitBtn = document.getElementById('analyzeBtn');
+    const originalText = submitBtn.innerHTML;
+    
+    // Show loading state
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Analyzing...';
+    
+    // Simulate analysis (replace with actual form submission to backend)
+    setTimeout(function() {
+        // Reset button
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+        
+        // Show mock results
+        showMockResults();
+    }, 3000);
+});
+
+function showMockResults() {
+    const resultsSection = document.getElementById('resultsSection');
+    const analysisResults = document.getElementById('analysisResults');
+    
+    analysisResults.innerHTML = `
+        <div class="alert alert-success">
+            <h5 class="alert-heading fw-bold">Analysis Complete</h5>
+            <p class="mb-0">Image analysis has been completed successfully. This is a placeholder for actual AI analysis results.</p>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <h6 class="fw-bold">Processing Status</h6>
+                <p class="text-success"><i class="fas fa-check-circle me-1"></i> Image processed successfully</p>
+            </div>
+            <div class="col-md-6">
+                <h6 class="fw-bold">Next Steps</h6>
+                <p class="text-muted">Results will be available for download and review.</p>
+            </div>
+        </div>
+    `;
+    
+    resultsSection.classList.remove('d-none');
+    resultsSection.scrollIntoView({ behavior: 'smooth' });
+}
+</script>
 {% endblock %}

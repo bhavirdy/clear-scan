@@ -1,0 +1,207 @@
+/* ClearScan Medical Platform Styles */
+
+/* Medical theme colors */
+:root {
+    --medical-blue: #0056b3;
+    --medical-green: #28a745;
+    --medical-red: #dc3545;
+    --medical-orange: #fd7e14;
+    --medical-light: #f8f9fa;
+    --medical-dark: #343a40;
+}
+
+/* Dropzone for X-ray upload */
+.dropzone {
+    border: 3px dashed #0056b3;
+    border-radius: 15px;
+    padding: 30px;
+    text-align: center;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    transition: all 0.3s ease;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.dropzone:hover {
+    border-color: var(--medical-green);
+    background: linear-gradient(135deg, #e8f5e8 0%, #d4edda 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 86, 179, 0.2);
+}
+
+.dropzone-inner {
+    cursor: pointer;
+    width: 100%;
+}
+
+.dropzone label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: var(--medical-blue);
+    font-size: 1.1rem;
+}
+
+.dropzone .browse-btn {
+    cursor: pointer;
+    color: #fff;
+    text-decoration: none;
+    padding: 12px 25px;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.dropzone input[type="file"] {
+    display: none;
+}
+
+/* Upload button styles */
+.browse-btn {
+    cursor: pointer;
+    color: #fff;
+    background: linear-gradient(135deg, var(--medical-blue) 0%, #007bff 100%);
+    border: none;
+}
+
+.browse-btn:hover {
+    background: linear-gradient(135deg, var(--medical-green) 0%, #20c997 100%);
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+/* Medical card styles */
+.medical-card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.medical-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+}
+
+/* Progress bar for analysis */
+.analysis-progress {
+    height: 25px;
+    border-radius: 12px;
+    background: linear-gradient(90deg, var(--medical-green) 0%, var(--medical-blue) 100%);
+}
+
+/* Prediction confidence indicators */
+.confidence-high {
+    color: var(--medical-green);
+    font-weight: bold;
+}
+
+.confidence-medium {
+    color: var(--medical-orange);
+    font-weight: bold;
+}
+
+.confidence-low {
+    color: var(--medical-red);
+    font-weight: bold;
+}
+
+/* Heatmap container */
+.heatmap-container {
+    border: 2px solid var(--medical-blue);
+    border-radius: 10px;
+    padding: 10px;
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Medical icons */
+.medical-icon {
+    color: var(--medical-blue);
+    margin-right: 8px;
+}
+
+/* File display improvements */
+#fileNameDisplay {
+    margin-top: 15px;
+    padding: 10px;
+    background: #d4edda;
+    border: 1px solid #c3e6cb;
+    border-radius: 8px;
+    color: #155724;
+    font-weight: 500;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .dropzone {
+        padding: 20px;
+        min-height: 150px;
+    }
+    
+    .medical-card {
+        margin-bottom: 20px;
+    }
+}
+
+/* Animation for loading states */
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+
+.analyzing {
+    animation: pulse 2s infinite;
+}
+
+/* Navbar medical theme */
+.navbar-brand {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+/* Step indicator for registration */
+.step-indicator {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 30px;
+}
+
+.step-indicator .step-item {
+    flex: 1;
+    text-align: center;
+    position: relative;
+}
+
+.step-indicator .step-item.active {
+    color: var(--medical-blue);
+    font-weight: bold;
+}
+
+.step-indicator .step-item.completed {
+    color: var(--medical-green);
+}
+
+/* Custom scrollbar for medical theme */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--medical-light);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--medical-blue);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--medical-green);
+}

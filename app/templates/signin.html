@@ -1,30 +1,225 @@
 {% extends "base.html" %}
 
 {% block title %}
-    Sign In
+    Sign In - ClearScan Medical Platform
 {% endblock %}
 
 {% block main %}
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Sign In</h5>
-                    <form method="POST" action="/signin">
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Email address</label>
-                            <input type="email" class="form-control" id="email" name="email" required>
+<div class="min-vh-100 d-flex align-items-center py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-5 col-md-7">
+                <div class="card border-0 shadow-lg rounded-4">
+                    <!-- Header -->
+                    <div class="card-header bg-gradient-primary text-white border-0 rounded-top-4">
+                        <div class="text-center py-3">
+                            <div class="d-flex align-items-center justify-content-center mb-2">
+                                <i class="fas fa-user-md fa-2x me-3"></i>
+                                <div>
+                                    <h3 class="mb-0 fw-bold">ClearScan</h3>
+                                    <small class="opacity-90">Medical Platform</small>
+                                </div>
+                            </div>
+                            <p class="mb-0 opacity-90">Welcome back, medical professional</p>
                         </div>
-                        <div class="mb-3">
-                            <label for="password" class="form-label">Password</label>
-                            <input type="password" class="form-control" id="password" name="password" required>
+                    </div>
+                    
+                    <!-- Form Body -->
+                    <div class="card-body p-5">
+                        <form method="POST" id="signinForm">
+                            <div class="mb-4">
+                                <label for="email" class="form-label fw-semibold">
+                                    <i class="fas fa-envelope me-2 text-primary"></i>Email Address
+                                </label>
+                                <input type="email" class="form-control form-control-lg" id="email" name="email" 
+                                       placeholder="Enter your professional email" required>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="password" class="form-label fw-semibold">
+                                    <i class="fas fa-lock me-2 text-primary"></i>Password
+                                </label>
+                                <div class="input-group">
+                                    <input type="password" class="form-control form-control-lg" id="password" name="password" 
+                                           placeholder="Enter your password" required>
+                                    <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                        <i class="fas fa-eye" id="passwordIcon"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <div class="row align-items-center">
+                                    <div class="col-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="remember" name="remember">
+                                            <label class="form-check-label text-muted" for="remember">
+                                                Remember me
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 text-end">
+                                        <a href="#" class="text-decoration-none text-primary fw-semibold">
+                                            Forgot password?
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid mb-4">
+                                <button type="submit" class="btn btn-primary btn-lg fw-semibold py-3">
+                                    <i class="fas fa-sign-in-alt me-2"></i>Sign In to Platform
+                                </button>
+                            </div>
+                            
+                            <!-- Divider -->
+                            <div class="text-center mb-4">
+                                <span class="text-muted">or</span>
+                            </div>
+                            
+                            <!-- SSO Options -->
+                            <div class="d-grid gap-2 mb-4">
+                                <button type="button" class="btn btn-outline-danger btn-lg">
+                                    <i class="fab fa-google me-2"></i>Continue with Google
+                                </button>
+                                <button type="button" class="btn btn-outline-dark btn-lg">
+                                    <i class="fab fa-microsoft me-2"></i>Continue with Microsoft
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <!-- Footer -->
+                    <div class="card-footer bg-light border-0 rounded-bottom-4">
+                        <div class="text-center py-3">
+                            <p class="mb-0 text-muted">
+                                Don't have an account? 
+                                <a href="/signup" class="text-primary fw-semibold text-decoration-none">
+                                    Create Professional Account
+                                </a>
+                            </p>
                         </div>
-                        <button type="submit" class="btn btn-primary">Sign In</button>
-                    </form>
+                    </div>
+                </div>
+                
+                <!-- Security Notice -->
+                <div class="card border-0 shadow-sm mt-4">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-start">
+                            <i class="fas fa-shield-alt fa-2x text-success me-3 mt-1"></i>
+                            <div>
+                                <h6 class="fw-bold text-dark mb-2">Secure Medical Platform</h6>
+                                <p class="text-muted small mb-0">
+                                    ClearScan complies with HIPAA and international medical data protection standards. 
+                                    Your credentials and patient data are encrypted and secure.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #0d6efd 0%, #6610f2 100%);
+}
+
+.card {
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.input-group .form-control:focus {
+    z-index: 3;
+}
+
+.btn {
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+.min-vh-100 {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.form-control-lg {
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+}
+
+.card-footer {
+    background-color: rgba(248, 249, 250, 0.8) !important;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Password visibility toggle
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('password');
+    const passwordIcon = document.getElementById('passwordIcon');
+    
+    togglePassword.addEventListener('click', function() {
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        
+        // Toggle icon
+        if (type === 'password') {
+            passwordIcon.classList.remove('fa-eye-slash');
+            passwordIcon.classList.add('fa-eye');
+        } else {
+            passwordIcon.classList.remove('fa-eye');
+            passwordIcon.classList.add('fa-eye-slash');
+        }
+    });
+    
+    // Form submission
+    document.getElementById('signinForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        
+        // Show loading state
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Signing In...';
+        
+        // Simulate authentication process
+        setTimeout(() => {
+            // Reset button
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+            
+            // Redirect to home page (in real app, this would be handled by backend)
+            window.location.href = '/home';
+        }, 2000);
+    });
+    
+    // Add loading states to SSO buttons
+    document.querySelectorAll('.btn-outline-danger, .btn-outline-dark').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const originalText = this.innerHTML;
+            this.disabled = true;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Connecting...';
+            
+            // Reset after delay (in real app, this would redirect to OAuth)
+            setTimeout(() => {
+                this.disabled = false;
+                this.innerHTML = originalText;
+            }, 2000);
+        });
+    });
+});
+</script>
 {% endblock %}

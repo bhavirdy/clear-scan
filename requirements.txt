@@ -1,0 +1,16 @@
+
+# Web Framework
+Flask==2.3.3
+Flask-WTF==1.1.1
+Werkzeug==2.3.7
+
+# File handling  
+PyPDF2==3.0.1
+
+# Utilities
+requests==2.31.0
+python-dotenv==1.0.0
+
+# Development and testing
+pytest==7.4.2
+pytest-flask==1.2.0

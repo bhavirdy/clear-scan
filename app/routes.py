@@ -1,87 +1,114 @@
-from flask import render_template, request, redirect, url_for, flash,jsonify
+from flask import render_template, request, redirect, url_for, flash, jsonify
 from app import app
 from functools import wraps
-import PyPDF2
+from werkzeug.utils import secure_filename
 
-allowed_extensions = {'pdf', 'png', 'jpg', 'jpeg', 'doc', 'docx'}
+# Allowed file extensions for medical images
+allowed_extensions = {'png', 'jpg', 'jpeg', 'bmp', 'tiff'}
+
 @app.route('/')
 def index():
     return render_template('index.html')
 
-
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
-    if request.method=="GET":
+    if request.method == "GET":
         return render_template("signup.html")
-    elif request.method=="POST":
+    elif request.method == "POST":
+        # Handle healthcare professional registration
+        # Extract form data
+        first_name = request.form.get('firstName')
+        last_name = request.form.get('lastName')
+        email = request.form.get('email')
+        phone = request.form.get('phone')
+        specialty = request.form.get('specialty')
+        institution = request.form.get('institution')
+        registration = request.form.get('registration')
+        password = request.form.get('password')
+        
+        # TODO: Implement user registration logic
+        # - Validate medical registration number
+        # - Hash password
+        # - Store user in database
+        # - Send verification email
+        
+        flash('Registration successful! Please check your email for verification.', 'success')
         return redirect("/signin")
 
-@app.route('/signin', methods=["GET","POST"])
+@app.route('/signin', methods=["GET", "POST"])
 def signin():
     if request.method == "GET":
         return render_template("signin.html")
     elif request.method == "POST":
+        # TODO: Implement authentication logic
+        # - Validate credentials
+        # - Check medical license status
+        # - Create session
+        
         # Assuming authentication is successful and user session is set
-
-       # session["user_id"] = user_id  # Set the user session ID
-        return redirect(url_for('home'))  # Redirect to the home page
+        # session["user_id"] = user_id  # Set the user session ID
+        return redirect(url_for('home'))  # Redirect to the diagnostic home page
 
 @app.route('/home')
 def home():
-    # Logic for home page
+    # Main diagnostic interface for X-ray upload
     return render_template("home.html")
+
 @app.route("/process", methods=["POST"])
-# Route for uploading a resume
-def upload_resume():
-    # Check if the 'file' key exists in the request.files dictionary
-    if 'resume' not in request.files:
-        # If 'file' key is not found, return an error response
-        print(request.files,"1st")
-        return jsonify({'error': 'No file part'})
+def upload_xray():
+    """
+    Handle uploaded chest X-ray images (UI only - no AI processing)
+    """
+    # Check if the 'xray' key exists in the request.files dictionary
+    if 'xray' not in request.files:
+        return jsonify({'error': 'No X-ray image uploaded', 'status': 'error'})
 
     # Retrieve the file object from the request
-    file = request.files['resume']
-    print(file)
-    print(request.files,"3st")
-    try:
-        pdf = PyPDF2.PdfFileReader(file)
-        if pdf.numPages > 0:
-            return jsonify({'message': 'PDF file uploaded'})
-    except PyPDF2.utils.PdfReadError:
-        return jsonify({'error': 'Unsupported file type'})
-
-      
-
+    file = request.files['xray']
+    
     # Check if the filename is empty
     if file.filename == '':
-        # If filename is empty, return an error response
-        return jsonify({'error': 'No selected file'})
+        return jsonify({'error': 'No file selected', 'status': 'error'})
 
-    # Extract the lowercase filename
-    filename = file.filename.lower()
+    # Extract additional form data
+    patient_id = request.form.get('patientId', '')
+    patient_age = request.form.get('patientAge', '')
+    clinical_notes = request.form.get('clinicalNotes', '')
 
-    # Check if the filename has a valid extension
+    # Validate file extension
+    filename = secure_filename(file.filename).lower()
     if '.' not in filename or filename.rsplit('.', 1)[1].lower() not in allowed_extensions:
-        # If the file extension is not valid, return an error response
-        return jsonify({'error': 'Invalid file extension'})
+        return jsonify({'error': 'Invalid file format. Please upload PNG, JPEG, BMP, or TIFF files only.', 'status': 'error'})
 
-    # Handle PDF file
-    if filename.endswith('.pdf'):
-        # Process the PDF file (replace this with your actual PDF processing code)
-        # Here, we are returning a success message indicating that the PDF file was uploaded
-        return jsonify({'message': 'PDF file uploaded'})
+    try:
+        # Simulate successful upload
+        response_data = {
+            'status': 'success',
+            'message': 'X-ray uploaded successfully!',
+            'patient_id': patient_id,
+            'patient_age': patient_age,
+            'clinical_notes': clinical_notes,
+            'filename': filename,
+            'file_size': len(file.read()),
+            'note': 'This is a demonstration. In a real medical setting, this would connect to AI diagnostic systems.'
+        }
 
-    # Handle image file
-    if filename.endswith(('.png', '.jpg', '.jpeg')):
-        # Process the image file (replace this with your actual image processing code)
-        # Here, we are returning a success message indicating that the image file was uploaded
-        return jsonify({'message': 'Image file uploaded'})
+        return jsonify(response_data)
 
-    # Handle Word document
-    if filename.endswith(('.doc', '.docx')):
-        # Process the Word document (replace this with your actual document processing code)
-        # Here, we are returning a success message indicating that the Word document was uploaded
-        return jsonify({'message': 'Word document uploaded'})
+    except Exception as e:
+        app.logger.error(f"Error processing X-ray upload: {str(e)}")
+        return jsonify({'error': 'Internal server error during upload', 'status': 'error'})
 
-    # If the file type is not recognized, return an error response
-    return jsonify({'error': 'Unsupported file type'})
+@app.route('/history')
+def history():
+    """
+    Display patient analysis history (UI placeholder)
+    """
+    return render_template('history.html')
+
+@app.route('/reports')
+def reports():
+    """
+    Generate and download diagnostic reports (UI placeholder)
+    """
+    return render_template('reports.html')
