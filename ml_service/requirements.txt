@@ -1,0 +1,7 @@
+torch
+torchvision
+torchcam
+flask
+scikit-learn
+Pillow
+wandb

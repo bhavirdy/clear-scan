@@ -69,7 +69,14 @@ Thumbs.db
 *.dicom
 uploads/
 temp/
+gradcams/
 
 # Backup files
 *.bak
 *.backup
+
+# Datasets
+data/
+
+# wandb logs
+wandb/
