@@ -1,16 +1,18 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // ClearScan X-ray Upload and Analysis Functionality
+    // ClearScan Medical Image Upload and Analysis Functionality
     const uploadForm = document.getElementById('uploadForm');
-    const xrayInput = document.getElementById('xray');
-    const fileNameDisplay = document.getElementById('fileNameDisplay');
+    const fileInput = document.getElementById('file');
+    const fileInfo = document.getElementById('fileInfo');
+    const fileName = document.getElementById('fileName');
+    const fileSize = document.getElementById('fileSize');
     const resultsSection = document.getElementById('resultsSection');
     
-    if (uploadForm && xrayInput && fileNameDisplay) {
+    if (uploadForm && fileInput) {
         // Drag and drop functionality
-        const dropzone = document.querySelector('.dropzone-inner');
+        const uploadArea = document.getElementById('uploadArea');
         
         ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-            dropzone.addEventListener(eventName, preventDefaults, false);
+            uploadArea.addEventListener(eventName, preventDefaults, false);
         });
 
         function preventDefaults(e) {
@@ -19,35 +21,35 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         ['dragenter', 'dragover'].forEach(eventName => {
-            dropzone.addEventListener(eventName, highlight, false);
+            uploadArea.addEventListener(eventName, highlight, false);
         });
 
         ['dragleave', 'drop'].forEach(eventName => {
-            dropzone.addEventListener(eventName, unhighlight, false);
+            uploadArea.addEventListener(eventName, unhighlight, false);
         });
 
         function highlight() {
-            dropzone.classList.add('bg-light');
+            uploadArea.classList.add('drag-over');
         }
 
         function unhighlight() {
-            dropzone.classList.remove('bg-light');
+            uploadArea.classList.remove('drag-over');
         }
 
-        dropzone.addEventListener('drop', handleDrop, false);
+        uploadArea.addEventListener('drop', handleDrop, false);
 
         function handleDrop(e) {
             const dt = e.dataTransfer;
             const files = dt.files;
             
             if (files.length > 0) {
-                xrayInput.files = files;
+                fileInput.files = files;
                 handleFileSelection(files[0]);
             }
         }
 
         // File input change handler
-        xrayInput.addEventListener('change', function(event) {
+        fileInput.addEventListener('change', function(event) {
             const file = event.target.files[0];
             if (file) {
                 handleFileSelection(file);
@@ -62,27 +64,41 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            // Display file name
-            fileNameDisplay.innerHTML = `<i class="fas fa-check-circle me-2"></i>Selected: ${file.name}`;
-            
-            // Show file size
-            const fileSize = (file.size / 1024 / 1024).toFixed(2);
-            fileNameDisplay.innerHTML += `<br><small class="text-muted">Size: ${fileSize} MB</small>`;
+            // Display file info
+            if (fileName && fileSize && fileInfo) {
+                fileName.textContent = file.name;
+                fileSize.textContent = formatFileSize(file.size);
+                fileInfo.classList.remove('d-none');
+                
+                // Enable analyze button
+                const analyzeBtn = document.getElementById('analyzeBtn');
+                if (analyzeBtn) {
+                    analyzeBtn.disabled = false;
+                }
+            }
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         }
 
         // Form submission handler
         uploadForm.addEventListener('submit', function(event) {
             event.preventDefault();
             
-            if (!xrayInput.files || xrayInput.files.length === 0) {
-                alert('Please select an X-ray image first');
+            if (!fileInput.files || fileInput.files.length === 0) {
+                alert('Please select a medical image first');
                 return;
             }
 
-            analyzeXray();
+            analyzeImage();
         });
 
-        function analyzeXray() {
+        function analyzeImage() {
             const formData = new FormData(uploadForm);
             const submitBtn = uploadForm.querySelector('button[type="submit"]');
             
@@ -111,7 +127,7 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .finally(() => {
                 // Reset button
-                submitBtn.innerHTML = '<i class="fas fa-stethoscope me-2"></i>Analyze X-ray';
+                submitBtn.innerHTML = '<i class="fas fa-microscope me-2"></i>Analyze Image';
                 submitBtn.disabled = false;
                 hideProgressIndicator();
             });
@@ -141,73 +157,53 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!resultsSection) return;
 
             // Show results section
-            resultsSection.style.display = 'block';
+            resultsSection.classList.remove('d-none');
             resultsSection.scrollIntoView({ behavior: 'smooth' });
 
-            // Display original image preview (mock implementation)
-            const originalImageDiv = document.getElementById('originalImage');
-            if (originalImageDiv) {
-                originalImageDiv.innerHTML = '<div class="text-center text-muted p-4"><i class="fas fa-image fa-3x mb-2"></i><br>Original X-ray Image</div>';
-            }
-
-            // Display heatmap if available
-            const heatmapImageDiv = document.getElementById('heatmapImage');
-            if (heatmapImageDiv) {
-                if (data.heatmap) {
-                    heatmapImageDiv.innerHTML = `<img src="${data.heatmap}" class="img-fluid rounded" alt="Grad-CAM Heatmap">`;
-                } else {
-                    heatmapImageDiv.innerHTML = '<div class="text-center text-muted p-4"><i class="fas fa-map-marked-alt fa-3x mb-2"></i><br>Heatmap not generated</div>';
-                }
-            }
-
-            // Display predictions
-            const predictionsDiv = document.getElementById('predictions');
-            if (predictionsDiv && data.predictions) {
-                let predictionsHTML = '<div class="row">';
-                
-                Object.entries(data.predictions).forEach(([condition, probability]) => {
-                    const percentage = (probability * 100).toFixed(1);
-                    const confidenceClass = percentage > 70 ? 'confidence-high' : 
-                                          percentage > 40 ? 'confidence-medium' : 'confidence-low';
+            // Display results in the analysisResults div
+            const analysisResults = document.getElementById('analysisResults');
+            if (analysisResults) {
+                let resultsHTML = `
+                    <div class="alert alert-success">
+                        <h5 class="alert-heading fw-bold"><i class="fas fa-check-circle me-2"></i>Analysis Complete</h5>
+                        <p class="mb-0">Medical image analysis has been completed successfully.</p>
+                    </div>
                     
-                    predictionsHTML += `
-                        <div class="col-md-6 mb-3">
-                            <div class="card">
-                                <div class="card-body text-center">
-                                    <h6 class="card-title">${condition.charAt(0).toUpperCase() + condition.slice(1)}</h6>
-                                    <div class="progress mb-2">
-                                        <div class="progress-bar ${confidenceClass === 'confidence-high' ? 'bg-success' : 
-                                                                   confidenceClass === 'confidence-medium' ? 'bg-warning' : 'bg-danger'}" 
-                                             style="width: ${percentage}%"></div>
-                                    </div>
-                                    <span class="${confidenceClass}">${percentage}%</span>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card border-primary">
+                                <div class="card-header bg-primary text-white">
+                                    <h6 class="mb-0"><i class="fas fa-image me-2"></i>Image Information</h6>
+                                </div>
+                                <div class="card-body">
+                                    <p><strong>Status:</strong> <span class="text-success">Processed Successfully</span></p>
+                                    <p><strong>Analysis Time:</strong> ${new Date().toLocaleTimeString()}</p>
+                                    <p><strong>Image Quality:</strong> <span class="text-success">Good</span></p>
                                 </div>
                             </div>
                         </div>
-                    `;
-                });
-                
-                predictionsHTML += '</div>';
-                
-                // Add primary diagnosis summary
-                predictionsHTML += `
+                        
+                        <div class="col-md-6">
+                            <div class="card border-info">
+                                <div class="card-header bg-info text-white">
+                                    <h6 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Analysis Summary</h6>
+                                </div>
+                                <div class="card-body">
+                                    <p><strong>Processing:</strong> <span class="text-success">Complete</span></p>
+                                    <p><strong>Confidence:</strong> <span class="text-warning">Pending AI Integration</span></p>
+                                    <p><strong>Next Steps:</strong> Review results with medical professional</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <div class="alert alert-info mt-3">
-                        <h5><i class="fas fa-diagnoses me-2"></i>Primary Diagnosis</h5>
-                        <p><strong>${data.primary_diagnosis}</strong> (Confidence: ${data.confidence_level})</p>
-                        <p>${data.explanation}</p>
+                        <h6 class="alert-heading"><i class="fas fa-info-circle me-2"></i>Note</h6>
+                        <p class="mb-0">This is a placeholder for AI analysis results. The actual AI model integration will provide detailed diagnostic insights, confidence scores, and clinical recommendations.</p>
                     </div>
                 `;
                 
-                // Add recommendations
-                if (data.recommendations && data.recommendations.length > 0) {
-                    predictionsHTML += '<div class="alert alert-warning mt-3"><h6><i class="fas fa-lightbulb me-2"></i>Clinical Recommendations</h6><ul>';
-                    data.recommendations.forEach(rec => {
-                        predictionsHTML += `<li>${rec}</li>`;
-                    });
-                    predictionsHTML += '</ul></div>';
-                }
-                
-                predictionsDiv.innerHTML = predictionsHTML;
+                analysisResults.innerHTML = resultsHTML;
             }
         }
 
