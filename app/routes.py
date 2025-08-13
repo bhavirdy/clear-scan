@@ -2,9 +2,14 @@ from flask import render_template, request, redirect, url_for, flash, jsonify
 from app import app
 from functools import wraps
 from werkzeug.utils import secure_filename
+import requests
+import os
 
 # Allowed file extensions for medical images
 allowed_extensions = {'png', 'jpg', 'jpeg', 'bmp', 'tiff'}
+
+# ML Service configuration
+ML_SERVICE_URL = "http://localhost:5000/predict"
 
 @app.route('/')
 def index():
@@ -57,23 +62,25 @@ def home():
 @app.route("/process", methods=["POST"])
 def upload_xray():
     """
-    Handle uploaded chest X-ray images (UI only - no AI processing)
+    Handle uploaded medical images and send to ML service for analysis
     """
-    # Check if the 'xray' key exists in the request.files dictionary
-    if 'xray' not in request.files:
-        return jsonify({'error': 'No X-ray image uploaded', 'status': 'error'})
+    # Check if the 'file' key exists in the request.files dictionary
+    if 'file' not in request.files:
+        return jsonify({'error': 'No medical image uploaded', 'status': 'error'})
 
     # Retrieve the file object from the request
-    file = request.files['xray']
+    file = request.files['file']
     
     # Check if the filename is empty
     if file.filename == '':
         return jsonify({'error': 'No file selected', 'status': 'error'})
 
     # Extract additional form data
-    patient_id = request.form.get('patientId', '')
-    patient_age = request.form.get('patientAge', '')
-    clinical_notes = request.form.get('clinicalNotes', '')
+    patient_id = request.form.get('patient_id', '')
+    patient_age = request.form.get('patient_age', '')
+    patient_gender = request.form.get('patient_gender', '')
+    study_type = request.form.get('study_type', '')
+    clinical_notes = request.form.get('clinical_notes', '')
 
     # Validate file extension
     filename = secure_filename(file.filename).lower()
@@ -81,23 +88,76 @@ def upload_xray():
         return jsonify({'error': 'Invalid file format. Please upload PNG, JPEG, BMP, or TIFF files only.', 'status': 'error'})
 
     try:
-        # Simulate successful upload
-        response_data = {
-            'status': 'success',
-            'message': 'X-ray uploaded successfully!',
-            'patient_id': patient_id,
-            'patient_age': patient_age,
-            'clinical_notes': clinical_notes,
-            'filename': filename,
-            'file_size': len(file.read()),
-            'note': 'This is a demonstration. In a real medical setting, this would connect to AI diagnostic systems.'
-        }
+        # Prepare file for ML service
+        file.seek(0)  # Reset file pointer
+        files = {'file': (file.filename, file.stream, file.content_type)}
+        
+        # Send file to ML service
+        ml_response = requests.post('http://localhost:5002/predict', files=files, timeout=30)
+        
+        if ml_response.status_code == 200:
+            ml_data = ml_response.json()
+            
+            # Successful ML analysis
+            response_data = {
+                'status': 'success',
+                'message': 'Medical image analyzed successfully!',
+                'patient_id': patient_id,
+                'patient_age': patient_age,
+                'patient_gender': patient_gender,
+                'study_type': study_type,
+                'clinical_notes': clinical_notes,
+                'filename': filename,
+                'prediction': ml_data.get('prediction', 'No prediction available'),
+                'confidence': ml_data.get('confidence', 0),
+                'gradcam_image_url': ml_data.get('gradcam_image_url', ''),
+                'ml_service_response': ml_data
+            }
+            
+            return jsonify(response_data)
+            
+        else:
+            # ML service error
+            app.logger.error(f"ML service returned status {ml_response.status_code}: {ml_response.text}")
+            return jsonify({
+                'error': f'ML service error: {ml_response.status_code}',
+                'status': 'error',
+                'fallback_message': 'Analysis service temporarily unavailable'
+            })
 
-        return jsonify(response_data)
-
+    except requests.exceptions.ConnectionError:
+        app.logger.error("Could not connect to ML service")
+        return jsonify({
+            'error': 'Could not connect to ML analysis service',
+            'status': 'error',
+            'fallback_message': 'Please ensure the ML service is running on port 5000'
+        })
+    except requests.exceptions.Timeout:
+        app.logger.error("ML service request timed out")
+        return jsonify({
+            'error': 'Analysis request timed out',
+            'status': 'error',
+            'fallback_message': 'Image analysis is taking longer than expected'
+        })
     except Exception as e:
-        app.logger.error(f"Error processing X-ray upload: {str(e)}")
-        return jsonify({'error': 'Internal server error during upload', 'status': 'error'})
+        app.logger.error(f"Error processing medical image: {str(e)}")
+        return jsonify({
+            'error': 'Internal server error during analysis',
+            'status': 'error',
+            'fallback_message': 'An unexpected error occurred'
+        })
+
+@app.route('/gradcam/<filename>')
+def gradcam_proxy(filename):
+    """Proxy gradcam images from ML service"""
+    try:
+        response = requests.get(f'http://localhost:5002/gradcam/{filename}')
+        if response.status_code == 200:
+            return response.content, 200, {'Content-Type': 'image/png'}
+        else:
+            return "Image not found", 404
+    except Exception as e:
+        return f"Error fetching image: {str(e)}", 500
 
 @app.route('/history')
 def history():
