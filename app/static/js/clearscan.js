@@ -57,10 +57,21 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         function handleFileSelection(file) {
+            // Clear any previous results or errors
+            hideResults();
+            hideError();
+            
             // Validate file type
             const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/bmp', 'image/tiff'];
             if (!allowedTypes.includes(file.type) && !file.name.toLowerCase().endsWith('.dcm')) {
-                alert('Please select a valid medical image file (PNG, JPEG, BMP, TIFF, or DICOM)');
+                showError('Please select a valid medical image file (PNG, JPEG, BMP, TIFF, or DICOM)');
+                return;
+            }
+
+            // Validate file size (max 50MB)
+            const maxSize = 50 * 1024 * 1024; // 50MB
+            if (file.size > maxSize) {
+                showError('File size is too large. Please select a file smaller than 50MB.');
                 return;
             }
 
@@ -86,12 +97,21 @@ document.addEventListener('DOMContentLoaded', function() {
             return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         }
 
+        // Add a flag to prevent multiple submissions
+        let isAnalyzing = false;
+
         // Form submission handler
         uploadForm.addEventListener('submit', function(event) {
             event.preventDefault();
             
+            // Prevent multiple submissions
+            if (isAnalyzing) {
+                console.log('Analysis already in progress...');
+                return;
+            }
+            
             if (!fileInput.files || fileInput.files.length === 0) {
-                alert('Please select a medical image first');
+                showError('Please select a medical image first');
                 return;
             }
 
@@ -99,8 +119,16 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         function analyzeImage() {
+            // Prevent multiple submissions
+            if (isAnalyzing) return;
+            isAnalyzing = true;
+            
             const formData = new FormData(uploadForm);
             const submitBtn = uploadForm.querySelector('button[type="submit"]');
+            
+            // Hide any previous results or errors
+            hideResults();
+            hideError();
             
             // Show loading state
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Analyzing...';
@@ -113,8 +141,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 method: 'POST',
                 body: formData
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
             .then(data => {
+                console.log('Analysis response:', data);
                 if (data.status === 'success') {
                     displayResults(data);
                 } else {
@@ -122,14 +156,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             })
             .catch(error => {
-                console.error('Error:', error);
-                showError('Network error occurred during analysis');
+                console.error('Analysis error:', error);
+                showError(`Network error: ${error.message}`);
             })
             .finally(() => {
-                // Reset button
+                // Reset button and state
                 submitBtn.innerHTML = '<i class="fas fa-microscope me-2"></i>Analyze Image';
                 submitBtn.disabled = false;
                 hideProgressIndicator();
+                isAnalyzing = false;
             });
         }
 
@@ -168,38 +203,118 @@ document.addEventListener('DOMContentLoaded', function() {
                         <h5 class="alert-heading fw-bold"><i class="fas fa-check-circle me-2"></i>Analysis Complete</h5>
                         <p class="mb-0">Medical image analysis has been completed successfully.</p>
                     </div>
+                `;
+
+                // Check if we have ML predictions
+                if (data.prediction && data.confidence !== undefined) {
+                    const confidence = (data.confidence * 100).toFixed(1);
+                    const confidenceClass = confidence > 70 ? 'success' : confidence > 40 ? 'warning' : 'danger';
                     
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="card border-primary">
-                                <div class="card-header bg-primary text-white">
-                                    <h6 class="mb-0"><i class="fas fa-image me-2"></i>Image Information</h6>
+                    resultsHTML += `
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card border-primary">
+                                    <div class="card-header bg-primary text-white">
+                                        <h6 class="mb-0"><i class="fas fa-diagnoses me-2"></i>AI Diagnosis</h6>
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <h4 class="text-primary">${data.prediction.toUpperCase()}</h4>
+                                        <div class="progress mt-3 mb-2">
+                                            <div class="progress-bar bg-${confidenceClass}" style="width: ${confidence}%"></div>
+                                        </div>
+                                        <p class="mb-0"><strong>Confidence:</strong> <span class="text-${confidenceClass}">${confidence}%</span></p>
+                                    </div>
                                 </div>
-                                <div class="card-body">
-                                    <p><strong>Status:</strong> <span class="text-success">Processed Successfully</span></p>
-                                    <p><strong>Analysis Time:</strong> ${new Date().toLocaleTimeString()}</p>
-                                    <p><strong>Image Quality:</strong> <span class="text-success">Good</span></p>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="card border-info">
+                                    <div class="card-header bg-info text-white">
+                                        <h6 class="mb-0"><i class="fas fa-image me-2"></i>GradCAM Visualization</h6>
+                                    </div>
+                                    <div class="card-body text-center">
+                                        ${data.gradcam_image_url ? 
+                                            `<img src="${data.gradcam_image_url}" class="img-fluid rounded" alt="GradCAM Heatmap" style="max-height: 200px;">
+                                             <p class="mt-2 text-muted">Areas of focus highlighted</p>` : 
+                                            `<div class="text-muted">
+                                                <i class="fas fa-image fa-3x mb-2"></i>
+                                                <p>Visualization not available</p>
+                                             </div>`
+                                        }
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        
-                        <div class="col-md-6">
-                            <div class="card border-info">
-                                <div class="card-header bg-info text-white">
-                                    <h6 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Analysis Summary</h6>
-                                </div>
-                                <div class="card-body">
-                                    <p><strong>Processing:</strong> <span class="text-success">Complete</span></p>
-                                    <p><strong>Confidence:</strong> <span class="text-warning">Pending AI Integration</span></p>
-                                    <p><strong>Next Steps:</strong> Review results with medical professional</p>
+
+                        <div class="row mt-3">
+                            <div class="col-md-12">
+                                <div class="card border-secondary">
+                                    <div class="card-header bg-secondary text-white">
+                                        <h6 class="mb-0"><i class="fas fa-user-md me-2"></i>Patient Information</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <p><strong>Patient ID:</strong> ${data.patient_id || 'N/A'}</p>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <p><strong>Age:</strong> ${data.patient_age || 'N/A'}</p>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <p><strong>Gender:</strong> ${data.patient_gender || 'N/A'}</p>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <p><strong>Study:</strong> ${data.study_type || 'N/A'}</p>
+                                            </div>
+                                        </div>
+                                        ${data.clinical_notes ? 
+                                            `<div class="row">
+                                                <div class="col-md-12">
+                                                    <p><strong>Clinical Notes:</strong> ${data.clinical_notes}</p>
+                                                </div>
+                                             </div>` : ''
+                                        }
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    
+                    `;
+                } else {
+                    // Fallback for when ML service is not available
+                    resultsHTML += `
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card border-primary">
+                                    <div class="card-header bg-primary text-white">
+                                        <h6 class="mb-0"><i class="fas fa-image me-2"></i>Image Information</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <p><strong>Status:</strong> <span class="text-success">Uploaded Successfully</span></p>
+                                        <p><strong>Analysis Time:</strong> ${new Date().toLocaleTimeString()}</p>
+                                        <p><strong>File:</strong> ${data.filename || 'Unknown'}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="card border-warning">
+                                    <div class="card-header bg-warning text-dark">
+                                        <h6 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Analysis Status</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <p><strong>ML Service:</strong> <span class="text-warning">Unavailable</span></p>
+                                        <p class="text-muted">${data.fallback_message || 'AI analysis service is currently offline'}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                resultsHTML += `
                     <div class="alert alert-info mt-3">
-                        <h6 class="alert-heading"><i class="fas fa-info-circle me-2"></i>Note</h6>
-                        <p class="mb-0">This is a placeholder for AI analysis results. The actual AI model integration will provide detailed diagnostic insights, confidence scores, and clinical recommendations.</p>
+                        <h6 class="alert-heading"><i class="fas fa-info-circle me-2"></i>Medical Disclaimer</h6>
+                        <p class="mb-0">This AI analysis is for diagnostic assistance only and should not replace professional medical judgment. Please consult with a qualified healthcare professional for final diagnosis and treatment decisions.</p>
                     </div>
                 `;
                 
@@ -208,9 +323,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         function showError(message) {
-            const errorDiv = document.createElement('div');
-            errorDiv.className = 'alert alert-danger mt-3';
-            errorDiv.innerHTML = `<i class="fas fa-exclamation-triangle me-2"></i>${message}`;
+            hideResults(); // Hide results section when showing error
             
             // Remove any existing error messages
             const existingError = uploadForm.querySelector('.alert-danger');
@@ -218,14 +331,40 @@ document.addEventListener('DOMContentLoaded', function() {
                 existingError.remove();
             }
             
-            uploadForm.appendChild(errorDiv);
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'alert alert-danger alert-dismissible fade show mt-3';
+            errorDiv.innerHTML = `
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>Error:</strong> ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
             
-            // Auto-remove error after 5 seconds
+            uploadForm.appendChild(errorDiv);
+            errorDiv.scrollIntoView({ behavior: 'smooth' });
+            
+            // Auto-remove error after 8 seconds
             setTimeout(() => {
                 if (errorDiv.parentNode) {
                     errorDiv.remove();
                 }
-            }, 5000);
+            }, 8000);
+        }
+
+        function hideError() {
+            const existingError = uploadForm.querySelector('.alert-danger');
+            if (existingError) {
+                existingError.remove();
+            }
+        }
+
+        function hideResults() {
+            if (resultsSection) {
+                resultsSection.classList.add('d-none');
+                const analysisResults = document.getElementById('analysisResults');
+                if (analysisResults) {
+                    analysisResults.innerHTML = '';
+                }
+            }
         }
     }
 

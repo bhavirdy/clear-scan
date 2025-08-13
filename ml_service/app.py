@@ -16,19 +16,26 @@ def predict():
         return jsonify({"error": "No file uploaded"}), 400
 
     file = request.files["file"]
+    if file.filename == '':
+        return jsonify({"error": "No file selected"}), 400
+        
     img_path = os.path.join(UPLOAD_FOLDER, file.filename)
     file.save(img_path)
 
-    pred_label, gradcam_path = process_image(img_path)
+    try:
+        pred_label, confidence, gradcam_path = process_image(img_path)
 
-    return jsonify({
-        "prediction": pred_label,
-        "gradcam_image_url": f"/gradcam/{os.path.basename(gradcam_path)}"
-    })
+        return jsonify({
+            "prediction": pred_label,
+            "confidence": confidence,
+            "gradcam_image_url": f"/gradcam/{os.path.basename(gradcam_path)}"
+        })
+    except Exception as e:
+        return jsonify({"error": f"Processing failed: {str(e)}"}), 500
 
 @app.route("/gradcam/<filename>")
 def serve_gradcam(filename):
     return send_file(os.path.join(GRADCAM_FOLDER, filename), mimetype="image/png")
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=5001, debug=True)
