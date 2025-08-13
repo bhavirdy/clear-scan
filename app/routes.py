@@ -93,7 +93,7 @@ def upload_xray():
         files = {'file': (file.filename, file.stream, file.content_type)}
         
         # Send file to ML service
-        ml_response = requests.post('http://localhost:5001/predict', files=files, timeout=30)
+        ml_response = requests.post('http://localhost:5002/predict', files=files, timeout=30)
         
         if ml_response.status_code == 200:
             ml_data = ml_response.json()
@@ -151,7 +151,7 @@ def upload_xray():
 def gradcam_proxy(filename):
     """Proxy gradcam images from ML service"""
     try:
-        response = requests.get(f'http://localhost:5001/gradcam/{filename}')
+        response = requests.get(f'http://localhost:5002/gradcam/{filename}')
         if response.status_code == 200:
             return response.content, 200, {'Content-Type': 'image/png'}
         else:
