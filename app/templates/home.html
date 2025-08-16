@@ -29,73 +29,7 @@
                 <div class="card-body p-5">
                     <!-- Upload Form -->
                     <form method="POST" enctype="multipart/form-data" id="uploadForm">
-                        <div class="row g-4">
-                            {% if show_patient_info %}
-                            <!-- Patient Informtion Section -->
-                            <div class="col-lg-4">
-                                <div class="card border border-primary border-opacity-25 h-100">
-                                    <div class="card-header bg-primary bg-opacity-10 border-0">
-                                        <h5 class="mb-0 fw-bold text-primary">
-                                            <i class="fas fa-user-injured me-2"></i>Patient Information
-                                        </h5>
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="mb-3">
-                                            <label for="patient_id" class="form-label fw-semibold">
-                                                <i class="fas fa-id-card me-1"></i>Patient ID
-                                            </label>
-                                            <input type="text" class="form-control" id="patient_id" name="patient_id" 
-                                                   placeholder="Enter patient ID" required>
-                                        </div>
-                                        
-                                        <div class="mb-3">
-                                            <label for="patient_age" class="form-label fw-semibold">
-                                                <i class="fas fa-birthday-cake me-1"></i>Age
-                                            </label>
-                                            <input type="number" class="form-control" id="patient_age" name="patient_age" 
-                                                   placeholder="Enter age" min="0" max="150">
-                                        </div>
-                                        
-                                        <div class="mb-3">
-                                            <label for="patient_gender" class="form-label fw-semibold">
-                                                <i class="fas fa-venus-mars me-1"></i>Gender
-                                            </label>
-                                            <select class="form-select" id="patient_gender" name="patient_gender">
-                                                <option value="">Select gender</option>
-                                                <option value="male">Male</option>
-                                                <option value="female">Female</option>
-                                                <option value="other">Other</option>
-                                            </select>
-                                        </div>
-                                        
-                                        <div class="mb-3">
-                                            <label for="study_type" class="form-label fw-semibold">
-                                                <i class="fas fa-stethoscope me-1"></i>Study Type
-                                            </label>
-                                            <select class="form-select" id="study_type" name="study_type">
-                                                <option value="">Select study type</option>
-                                                <option value="chest_xray">Chest X-Ray</option>
-                                                <option value="ct_scan">CT Scan</option>
-                                                <option value="mri">MRI</option>
-                                                <option value="ultrasound">Ultrasound</option>
-                                                <option value="other">Other</option>
-                                            </select>
-                                        </div>
-                                        
-                                        <div class="mb-0">
-                                            <label for="clinical_notes" class="form-label fw-semibold">
-                                                <i class="fas fa-notes-medical me-1"></i>Clinical Notes
-                                            </label>
-                                            <textarea class="form-control" id="clinical_notes" name="clinical_notes" 
-                                                      rows="3" placeholder="Enter relevant clinical information..."></textarea>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-lg-8">
-                            {% else %}
-                            <div class="col-lg-12">
-                            {% endif %}
+                        
                             <!-- File Upload Section -->
                                 <div class="card border border-success border-opacity-25 h-100">
                                     <div class="card-header bg-success bg-opacity-10 border-0">
@@ -156,7 +90,15 @@
                                             <button type="submit" class="btn btn-success btn-lg px-5 py-3 fw-semibold" id="analyzeBtn" disabled>
                                                 <i class="fas fa-microscope me-2"></i>Analyze Image
                                             </button>
+
+                                            <!-- Show Patient Info Button -->
+                                            <button type="button" id="showPatientInfoBtn" class="btn btn-primary mt-3">
+                                                Enter Patient Info
+                                            </button>
+
+
                                         </div>
+
                                     </div>
                                 </div>
                             </div>
@@ -184,7 +126,84 @@
             </div>
         </div>
     </div>
+
+    <div id="patientInfoSection" class="d-none">
+    <div class="card mt-4 border border-primary border-opacity-25">
+        <div class="card-header bg-primary bg-opacity-10 border-0">
+            <h5 class="mb-0 fw-bold text-primary">
+                <i class="fas fa-user-injured me-2"></i>Patient Information
+            </h5>
+        </div>
+        <div class="card-body">
+            <form id="patientInfoForm">
+                <div class="mb-3">
+                    <label for="patient_id" class="form-label fw-semibold">
+                        <i class="fas fa-id-card me-1"></i>Patient ID
+                    </label>
+                    <input type="text" class="form-control" id="patient_id" name="patient_id" placeholder="Enter patient ID" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="patient_age" class="form-label fw-semibold">
+                        <i class="fas fa-birthday-cake me-1"></i>Age
+                    </label>
+                    <input type="number" class="form-control" id="patient_age" name="patient_age" placeholder="Enter age" min="0" max="150">
+                </div>
+
+                <div class="mb-3">
+                    <label for="patient_gender" class="form-label fw-semibold">
+                        <i class="fas fa-venus-mars me-1"></i>Gender
+                    </label>
+                    <select class="form-select" id="patient_gender" name="patient_gender">
+                        <option value="">Select gender</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="study_type" class="form-label fw-semibold">
+                        <i class="fas fa-stethoscope me-1"></i>Study Type
+                    </label>
+                    <select class="form-select" id="study_type" name="study_type">
+                        <option value="">Select study type</option>
+                        <option value="chest_xray">Chest X-Ray</option>
+                        <option value="ct_scan">CT Scan</option>
+                        <option value="mri">MRI</option>
+                        <option value="ultrasound">Ultrasound</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="clinical_notes" class="form-label fw-semibold">
+                        <i class="fas fa-notes-medical me-1"></i>Clinical Notes
+                    </label>
+                    <textarea class="form-control" id="clinical_notes" name="clinical_notes" rows="3" placeholder="Enter relevant clinical information..."></textarea>
+                </div>
+
+                <!-- Submit -->
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-file-pdf me-2"></i>Generate Report
+                </button>
+            </form>
+        </div>
+    </div>
 </div>
+
+<script>
+    const patientSection = document.getElementById('patientInfoSection');
+    const showPatientBtn = document.getElementById('showPatientInfoBtn');
+
+    showPatientBtn.addEventListener('click', () => {
+        patientSection.classList.toggle('d-none');
+        patientSection.scrollIntoView({ behavior: 'smooth' });
+    });
+</script>
+
+
+
 
 <style>
 .bg-gradient-primary {
