@@ -30,7 +30,8 @@
                     <!-- Upload Form -->
                     <form method="POST" enctype="multipart/form-data" id="uploadForm">
                         <div class="row g-4">
-                            <!-- Patient Information Section -->
+                            {% if show_patient_info %}
+                            <!-- Patient Informtion Section -->
                             <div class="col-lg-4">
                                 <div class="card border border-primary border-opacity-25 h-100">
                                     <div class="card-header bg-primary bg-opacity-10 border-0">
@@ -91,9 +92,11 @@
                                     </div>
                                 </div>
                             </div>
-                            
-                            <!-- File Upload Section -->
                             <div class="col-lg-8">
+                            {% else %}
+                            <div class="col-lg-12">
+                            {% endif %}
+                            <!-- File Upload Section -->
                                 <div class="card border border-success border-opacity-25 h-100">
                                     <div class="card-header bg-success bg-opacity-10 border-0">
                                         <h5 class="mb-0 fw-bold text-success">
