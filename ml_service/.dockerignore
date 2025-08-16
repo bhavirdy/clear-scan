@@ -1,0 +1,40 @@
+# ML Service
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.git/
+.mypy_cache/
+.pytest_cache/
+.hypothesis/
+
+# Development files
+*.swp
+*.swo
+*~
+.DS_Store
+.vscode/
+.idea/
+
+# Test and documentation files
+test_*.py
+*_test.py
+tests/
+*.md
+README.md
+
+# Exclude uploads and gradcams (handled by volumes)
+uploads/
+gradcams/

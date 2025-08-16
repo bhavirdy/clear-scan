@@ -8,8 +8,17 @@ import os
 # Allowed file extensions for medical images
 allowed_extensions = {'png', 'jpg', 'jpeg', 'bmp', 'tiff'}
 
-# ML Service configuration
-ML_SERVICE_URL = "http://localhost:5000/predict"
+# ML Service configuration - support for containerized deployment
+ML_SERVICE_URL = os.environ.get('ML_SERVICE_URL', 'http://localhost:5002')
+
+@app.route('/health')
+def health_check():
+    """Health check endpoint for container orchestration"""
+    return jsonify({
+        'status': 'healthy',
+        'service': 'frontend',
+        'ml_service_url': ML_SERVICE_URL
+    }), 200
 
 @app.route('/')
 def index():
@@ -95,7 +104,7 @@ def upload_xray():
         files = {'file': (file.filename, file.stream, file.content_type)}
         
         # Send file to ML service
-        ml_response = requests.post('http://localhost:5002/predict', files=files, timeout=30)
+        ml_response = requests.post(f'{ML_SERVICE_URL}/predict', files=files, timeout=30)
         
         if ml_response.status_code == 200:
             ml_data = ml_response.json()
@@ -153,7 +162,7 @@ def upload_xray():
 def gradcam_proxy(filename):
     """Proxy gradcam images from ML service"""
     try:
-        response = requests.get(f'http://localhost:5002/gradcam/{filename}')
+        response = requests.get(f'{ML_SERVICE_URL}/gradcam/{filename}')
         if response.status_code == 200:
             return response.content, 200, {'Content-Type': 'image/png'}
         else:

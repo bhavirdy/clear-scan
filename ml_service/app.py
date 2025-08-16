@@ -10,6 +10,15 @@ GRADCAM_FOLDER = "gradcams"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(GRADCAM_FOLDER, exist_ok=True)
 
+@app.route("/health", methods=["GET"])
+def health_check():
+    """Health check endpoint for container orchestration"""
+    return jsonify({
+        "status": "healthy",
+        "service": "ml-service",
+        "timestamp": "ready"
+    }), 200
+
 @app.route("/predict", methods=["POST"])
 def predict():
     if "file" not in request.files:

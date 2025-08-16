@@ -80,3 +80,7 @@ data/
 
 # wandb logs
 wandb/
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
