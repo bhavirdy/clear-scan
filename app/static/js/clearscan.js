@@ -252,9 +252,18 @@ document.addEventListener('DOMContentLoaded', function () {
                     <h6 class="alert-heading"><i class="fas fa-info-circle me-2"></i>Medical Disclaimer</h6>
                     <p class="mb-0">This AI analysis is for diagnostic assistance only and should not replace professional medical judgment.</p>
                 </div>
+
+               
             `;
 
             analysisResults.innerHTML = resultsHTML;
+            const exportBtn = document.getElementById('exportReportBtn');
+            if (exportBtn) {
+                exportBtn.addEventListener('click', () => {
+                    console.log("Export button clicked!");
+                    alert("This will trigger PDF export flow once patient info is collected.");
+                });
+            }
         }
 
         function showError(message) {

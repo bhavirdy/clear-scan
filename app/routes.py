@@ -54,10 +54,12 @@ def signin():
         # session["user_id"] = user_id  # Set the user session ID
         return redirect(url_for('home'))  # Redirect to the diagnostic home page
 
-@app.route('/home')
+@app.route("/home", methods=["GET", "POST"])
 def home():
     # Main diagnostic interface for X-ray upload
-    return render_template("home.html")
+    # Patient Info section is hidden
+    return render_template("home.html", show_patient_info=False)
+
 
 @app.route("/process", methods=["POST"])
 def upload_xray():
