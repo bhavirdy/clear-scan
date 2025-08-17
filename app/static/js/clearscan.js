@@ -253,12 +253,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     <p class="mb-0">This AI analysis is for diagnostic assistance only and should not replace professional medical judgment.</p>
                 </div>
 
-                <!-- Export Report Button -->
-                <div class="text-center mt-4">
-                    <button id="exportReportBtn" class="btn btn-outline-danger btn-lg px-5 py-3 fw-semibold">
-                        <i class="fas fa-file-pdf me-2"></i> Export as PDF Report
-                    </button>
-                </div>
+               
             `;
 
             analysisResults.innerHTML = resultsHTML;

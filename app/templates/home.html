@@ -90,13 +90,6 @@
                                             <button type="submit" class="btn btn-success btn-lg px-5 py-3 fw-semibold" id="analyzeBtn" disabled>
                                                 <i class="fas fa-microscope me-2"></i>Analyze Image
                                             </button>
-
-                                            <!-- Show Patient Info Button -->
-                                            <button type="button" id="showPatientInfoBtn" class="btn btn-primary mt-3">
-                                                Enter Patient Info
-                                            </button>
-
-
                                         </div>
 
                                     </div>
@@ -122,6 +115,12 @@
                     <div id="analysisResults">
                         <!-- Results will be populated here -->
                     </div>
+
+                    <div class="text-center mt-3">
+                    <button type="button" id="exportPdfBtn" class="btn btn-success btn-lg">
+                        <i class="fas fa-file-pdf me-2"></i>Export as PDF
+                    </button>
+                </div>
                 </div>
             </div>
         </div>
@@ -183,24 +182,40 @@
                     <textarea class="form-control" id="clinical_notes" name="clinical_notes" rows="3" placeholder="Enter relevant clinical information..."></textarea>
                 </div>
 
-                <!-- Submit -->
-                <button type="submit" class="btn btn-success">
-                    <i class="fas fa-file-pdf me-2"></i>Generate Report
-                </button>
+        
             </form>
         </div>
     </div>
 </div>
 
 <script>
+    // Get the Export button and Patient Info section
+    const exportBtn = document.getElementById('exportPdfBtn');
     const patientSection = document.getElementById('patientInfoSection');
-    const showPatientBtn = document.getElementById('showPatientInfoBtn');
+    const patientForm = document.getElementById('patientInfoForm');
 
-    showPatientBtn.addEventListener('click', () => {
-        patientSection.classList.toggle('d-none');
+    // When Export is clicked, hide button and show patient info
+    exportBtn.addEventListener('click', () => {
+        exportBtn.classList.add('d-none');         // hide Export button
+        patientSection.classList.remove('d-none'); // show Patient Info section
         patientSection.scrollIntoView({ behavior: 'smooth' });
     });
+
+    // Handle patient form submission
+    patientForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        // Call your PDF generation function here
+        generatePDF(); // replace with your actual function
+
+        // Optional: hide form after submission
+        patientSection.classList.add('d-none');
+
+        // Optional: show export button again if needed
+        exportBtn.classList.remove('d-none');
+    });
 </script>
+
 
 
 
