@@ -8,6 +8,7 @@ from PIL import Image
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 MODEL_PATH = "models/densenet_tb_pneumonia.pt"
 CLASS_NAMES = ["normal", "pneumonia", "tb"]
+CONFIDENCE_THRESHOLD = 0.7  # Threshold for valid predictions
 
 transform = transforms.Compose([
     transforms.Resize((224, 224)),
@@ -40,6 +41,12 @@ def process_image(img_path):
     pred_class = output.argmax(dim=1).item()
     confidence = torch.softmax(output, dim=1)[0][pred_class].item()
     
+    # Check confidence threshold
+    if confidence < CONFIDENCE_THRESHOLD:
+        print(f"⚠️  Low confidence prediction: {confidence:.3f}")
+        print(f"    This may not be a valid chest X-ray image.")
+        return "INVALID_INPUT", confidence, None
+    
     # Generate activation map
     activation_maps = cam_extractor(pred_class, output)
     activation_map = activation_maps[0].squeeze().cpu()
@@ -61,12 +68,15 @@ if __name__ == "__main__":
     # testing preds
     # img_path = "uploads/CHNCXR_0327_1.png" # tb
     # img_path = "uploads/person1_bacteria_1.jpeg" # pneumonia
-    img_path = "uploads/CHNCXR_0001_0.png" # normal
+    # img_path = "uploads/CHNCXR_0001_0.png" # normal
+    img_path = "uploads/radiologist.jpeg"
     
     try:
         pred_label, confidence, gradcam_path = process_image(img_path)
-        print(f"✅ Prediction: {pred_label} ({confidence:.3f})")
-        print(f"🔥 GradCAM saved to: {gradcam_path}")
+        
+        if pred_label != "INVALID_INPUT":
+            print(f"✅ Prediction: {pred_label} ({confidence:.3f})")
+            print(f"🔥 GradCAM saved to: {gradcam_path}")
         
     except Exception as e:
         print(f"❌ Error running GradCAM: {e}")
