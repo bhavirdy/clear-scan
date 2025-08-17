@@ -19,10 +19,20 @@ def predict():
     img_path = os.path.join(UPLOAD_FOLDER, file.filename)
     file.save(img_path)
 
-    pred_label, gradcam_path = process_image(img_path)
+    pred_label, confidence, gradcam_path = process_image(img_path)
+
+    # Handle invalid input detection
+    if pred_label == "INVALID_INPUT":
+        return jsonify({
+            "prediction": "invalid",
+            "confidence": confidence,
+            "message": "Invalid or low-quality image detected. Please upload a clear chest X-ray.",
+            "gradcam_image_url": None
+        }), 200
 
     return jsonify({
         "prediction": pred_label,
+        "confidence": confidence,
         "gradcam_image_url": f"/gradcam/{os.path.basename(gradcam_path)}"
     })
 
