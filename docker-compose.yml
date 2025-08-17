@@ -1,0 +1,71 @@
+services:
+  # ML Service Container
+  ml-service:
+    build:
+      context: ./ml_service
+      dockerfile: Dockerfile
+    container_name: clearscan-ml-service
+    restart: unless-stopped
+    ports:
+      - "5002:5002"
+    volumes:
+      # Shared volume for uploads and gradcams
+      - ml_uploads:/app/uploads
+      - ml_gradcams:/app/gradcams
+      - ./ml_service/models:/app/models:ro  # Read-only models
+    environment:
+      - FLASK_ENV=production
+      - FLASK_APP=app.py
+      - ML_SERVICE_PORT=5002
+    networks:
+      - clearscan-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # Frontend Flask Application
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: clearscan-frontend
+    restart: unless-stopped
+    ports:
+      - "5053:5053"
+    volumes:
+      # Shared volume access
+      - ml_uploads:/app/uploads:ro  # Read-only access to ML uploads
+      - ml_gradcams:/app/gradcams:ro  # Read-only access to gradcams
+    environment:
+      - FLASK_ENV=production
+      - FLASK_APP=run.py
+      - FRONTEND_PORT=5053
+      # Service discovery - ML service URL
+      - ML_SERVICE_URL=http://ml-service:5002
+    networks:
+      - clearscan-network
+    depends_on:
+      ml-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5053/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+
+# Shared volumes for data exchange
+volumes:
+  ml_uploads:
+    driver: local
+  ml_gradcams:
+    driver: local
+
+# Custom network for service communication
+networks:
+  clearscan-network:
+    driver: bridge
+    name: clearscan-network

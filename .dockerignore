@@ -1,0 +1,45 @@
+# Frontend Service
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.git/
+.mypy_cache/
+.pytest_cache/
+.hypothesis/
+
+# Development files
+*.swp
+*.swo
+*~
+.DS_Store
+.vscode/
+.idea/
+
+# Node modules (if any)
+node_modules/
+
+# Frontend logs
+frontend.log
+*.log
+
+# Test files
+test_*.py
+*_test.py
+tests/
+
+# Documentation
+*.md
+README.md
