@@ -182,11 +182,54 @@
                     <textarea class="form-control" id="clinical_notes" name="clinical_notes" rows="3" placeholder="Enter relevant clinical information..."></textarea>
                 </div>
 
+                <div class="text-center mt-3">
+                    <button type="submit" id="generatePdfBtn" class="btn btn-success btn-lg" disabled>
+                        <i class="fas fa-file-pdf me-2"></i>Generate PDF
+                    </button>
+                </div>
+
+
         
             </form>
         </div>
     </div>
 </div>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+
+
+<script>
+    // --- Enable Generate PDF button only when all fields are filled ---
+    const generatePdfBtn = document.getElementById('generatePdfBtn');
+    const patientFields = [
+        document.getElementById('patient_id'),
+        document.getElementById('patient_age'),
+        document.getElementById('patient_gender'),
+        document.getElementById('study_type'),
+        document.getElementById('clinical_notes')
+    ];
+
+    function checkPatientFormComplete() {
+        let allFilled = true;
+
+        patientFields.forEach(field => {
+            if (field.tagName === 'SELECT') {
+                if (!field.value) allFilled = false;
+            } else if (field.tagName === 'TEXTAREA' || field.tagName === 'INPUT') {
+                if (!field.value.trim()) allFilled = false;
+            }
+        });
+
+        generatePdfBtn.disabled = !allFilled;
+    }
+
+    patientFields.forEach(field => {
+        field.addEventListener('input', checkPatientFormComplete);
+        field.addEventListener('change', checkPatientFormComplete); // for select fields
+    });
+</script>
 
 <script>
     // Get the Export button and Patient Info section
@@ -205,8 +248,8 @@
     patientForm.addEventListener('submit', (e) => {
         e.preventDefault();
 
-        // Call your PDF generation function here
-        generatePDF(); // replace with your actual function
+        // Generate the PDF
+        generatePDF();
 
         // Optional: hide form after submission
         patientSection.classList.add('d-none');
@@ -214,9 +257,36 @@
         // Optional: show export button again if needed
         exportBtn.classList.remove('d-none');
     });
+
+    // --- PDF generation function ---
+    function generatePDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        const patientID = document.getElementById('patient_id').value;
+        const age = document.getElementById('patient_age').value;
+        const gender = document.getElementById('patient_gender').value;
+        const studyType = document.getElementById('study_type').value;
+        const clinicalNotes = document.getElementById('clinical_notes').value;
+
+        doc.setFontSize(16);
+        doc.text("Patient Information", 20, 20);
+
+        doc.setFontSize(12);
+        doc.text(`Patient ID: ${patientID}`, 20, 40);
+        doc.text(`Age: ${age}`, 20, 50);
+        doc.text(`Gender: ${gender}`, 20, 60);
+        doc.text(`Study Type: ${studyType}`, 20, 70);
+        doc.text("Clinical Notes:", 20, 80);
+
+        // Wrap long clinical notes
+        const splitNotes = doc.splitTextToSize(clinicalNotes, 170);
+        doc.text(splitNotes, 20, 90);
+
+        // Save the PDF
+        doc.save(`Patient_${patientID}.pdf`);
+    }
 </script>
-
-
 
 
 
