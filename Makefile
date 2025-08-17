@@ -147,37 +147,3 @@ docker-clean:
 	docker-compose down -v --remove-orphans
 	docker system prune -f
 	@echo "✅ Cleanup complete!"
-
-# Docker deployment commands
-docker-build:
-	@echo "🐳 Building Docker containers..."
-	docker-compose build --no-cache
-	@echo "✅ Docker containers built successfully!"
-
-docker-up:
-	@echo "🚀 Starting ClearScan with Docker Compose..."
-	docker-compose up -d
-	@echo "✅ Services started!"
-	@echo "🌐 Frontend: http://localhost:5053"
-	@echo "🤖 ML Service: http://localhost:5002"
-	@echo "💡 Use 'make docker-logs' to view logs"
-
-docker-down:
-	@echo "🛑 Stopping Docker services..."
-	docker-compose down
-	@echo "✅ Services stopped!"
-
-docker-logs:
-	@echo "📋 Viewing Docker container logs..."
-	docker-compose logs -f
-
-docker-restart:
-	@echo "🔄 Restarting Docker services..."
-	docker-compose restart
-	@echo "✅ Services restarted!"
-
-docker-clean:
-	@echo "🧹 Cleaning Docker resources..."
-	docker-compose down -v
-	docker system prune -f
-	@echo "✅ Docker resources cleaned!"

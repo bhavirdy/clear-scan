@@ -4,6 +4,8 @@ from functools import wraps
 from werkzeug.utils import secure_filename
 import requests
 import os
+import requests
+import os
 
 # Allowed file extensions for medical images
 allowed_extensions = {'png', 'jpg', 'jpeg', 'bmp', 'tiff'}
@@ -74,12 +76,17 @@ def home():
 def upload_xray():
     """
     Handle uploaded medical images and send to ML service for analysis
+    Handle uploaded medical images and send to ML service for analysis
     """
+    # Check if the 'file' key exists in the request.files dictionary
+    if 'file' not in request.files:
+        return jsonify({'error': 'No medical image uploaded', 'status': 'error'})
     # Check if the 'file' key exists in the request.files dictionary
     if 'file' not in request.files:
         return jsonify({'error': 'No medical image uploaded', 'status': 'error'})
 
     # Retrieve the file object from the request
+    file = request.files['file']
     file = request.files['file']
     
     # Check if the filename is empty
@@ -87,6 +94,11 @@ def upload_xray():
         return jsonify({'error': 'No file selected', 'status': 'error'})
 
     # Extract additional form data
+    patient_id = request.form.get('patient_id', '')
+    patient_age = request.form.get('patient_age', '')
+    patient_gender = request.form.get('patient_gender', '')
+    study_type = request.form.get('study_type', '')
+    clinical_notes = request.form.get('clinical_notes', '')
     patient_id = request.form.get('patient_id', '')
     patient_age = request.form.get('patient_age', '')
     patient_gender = request.form.get('patient_gender', '')

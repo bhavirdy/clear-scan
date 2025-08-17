@@ -1,0 +1,71 @@
+# Combined ClearScan Application Dockerfile
+FROM python:3.9-slim
+
+# Set working directory
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    gcc \
+    g++ \
+    libglib2.0-0 \
+    libsm6 \
+    libxext6 \
+    libxrender-dev \
+    libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy and install frontend dependencies
+COPY requirements.txt ./frontend-requirements.txt
+RUN pip install --no-cache-dir -r frontend-requirements.txt
+
+# Copy and install ML service dependencies  
+COPY ml_service/requirements.txt ./ml-requirements.txt
+RUN pip install --no-cache-dir -r ml-requirements.txt
+
+# Copy frontend application
+COPY app/ ./app/
+COPY run.py ./
+COPY Makefile ./
+
+# Copy ML service
+COPY ml_service/ ./ml_service/
+
+# Create necessary directories
+RUN mkdir -p uploads static ml_service/uploads ml_service/gradcams ml_service/models
+
+# Copy models if they exist
+COPY ml_service/models/ ./ml_service/models/
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:5053/health || exit 1
+
+# Expose ports
+EXPOSE 5053
+
+# Create startup script that properly manages both services
+RUN echo '#!/bin/bash\n\
+echo "Starting ML service..."\n\
+cd /app/ml_service\n\
+python app.py &\n\
+ML_PID=$!\n\
+echo "ML service started with PID $ML_PID"\n\
+\n\
+echo "Waiting for ML service to be ready..."\n\
+for i in {1..30}; do\n\
+  if curl -f http://localhost:5002/health >/dev/null 2>&1; then\n\
+    echo "ML service is ready"\n\
+    break\n\
+  fi\n\
+  echo "Waiting for ML service... ($i/30)"\n\
+  sleep 2\n\
+done\n\
+\n\
+echo "Starting Frontend service..."\n\
+cd /app\n\
+exec python run.py' > start.sh && chmod +x start.sh
+
+# Start both services
+CMD ["bash", "./start.sh"]
