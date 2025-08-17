@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, request, jsonify, send_file
+from flask import Flask, request, jsonify, send_file
 from scripts.gradcam_backend import process_image
 
 app = Flask(__name__)
@@ -9,12 +9,6 @@ GRADCAM_FOLDER = "gradcams"
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(GRADCAM_FOLDER, exist_ok=True)
-
-@app.route("/home", methods=["GET", "POST"])
-def home():
-    # Render the home page with Patient Info hidden
-    return render_template("home.html", show_patient_info=False)
-
 
 @app.route("/predict", methods=["POST"])
 def predict():
@@ -30,6 +24,15 @@ def predict():
 
     try:
         pred_label, confidence, gradcam_path = process_image(img_path)
+
+        # Handle invalid input detection
+        if pred_label == "INVALID_INPUT":
+            return jsonify({
+                "prediction": "invalid",
+                "confidence": confidence,
+                "message": "Invalid or low-quality image detected. Please upload a clear chest X-ray.",
+                "gradcam_image_url": None
+            }), 200
 
         return jsonify({
             "prediction": pred_label,
